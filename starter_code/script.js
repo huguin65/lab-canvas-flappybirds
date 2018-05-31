@@ -189,4 +189,7 @@ window.onload = function() {
   document.onkeydown = function(e) {
     (e.keyCode == 38) && flappy.move();
   }
+  document.ontouchstart = function(e) {
+    flappy.move();
+  }
 };
