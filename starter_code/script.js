@@ -35,6 +35,7 @@ window.onload = function() {
     this.y = y;
     this.width = 50;
     this.height = 50;
+    this.acc = 0;
     this.sound = new Audio();
     this.sound.src = "http://soundfxcenter.com/video-games/super-mario-bros/8d82b5_Super_Mario_Bros_Jump_Super_Sound_Effect.mp3";
     this.img = new Image();
@@ -43,7 +44,8 @@ window.onload = function() {
       this.draw();
     }.bind(this);
     this.draw = ()=>{
-      this.y++;
+      this.y += 1 + this.acc;
+      this.acc += 0.01;
       ctx.drawImage(this.img,this.x,this.y,this.width,this.height);
       (((this.y < 0) || (this.y > (canvas.height - this.height))) && gameOver());
     }
@@ -51,6 +53,7 @@ window.onload = function() {
       this.sound.currentTime = 0.1;
       this.sound.play();
       this.y -= 50;
+      this.acc = 0;
     }
 
     this.left   = function() { return this.x                 }
@@ -91,6 +94,7 @@ window.onload = function() {
   //Refresca el canvas con todos los elementos en su nueva posicion
   function update(){
     frames++;
+    (frames%600 == 0) && (refresh -= ((frames/600 > 7) ? 0 : 24));
     ctx.clearRect(0,0,canvas.width,canvas.height);
     board.draw();
     showScore();
@@ -139,7 +143,7 @@ window.onload = function() {
 
   //Genera un nuevo pipe con altura aleatoria cada 250 frames
   function generatePipes(){
-    (frames%250 == 0) &&
+    (frames%refresh == 0) &&
     (random = Math.floor(Math.random()*200)+50,
     pipes.push(new Pipe(0,random)),
     pipes.push(new Pipe(random+130,canvas.height-(random+130))),
@@ -153,6 +157,7 @@ window.onload = function() {
   //Dibuja todos los pipes del arreglo
   function drawPipes(){
     pipes.forEach((pipe)=>{
+      pipe.x -= (((frames/600 > 5) ? 5 : Math.floor(frames/600)));
       pipe.draw();
     });
   }
@@ -171,11 +176,12 @@ window.onload = function() {
   let board;
   let flappy;
   let pipes;
+  let refresh;
 
   //Función de arranque
   function startGame() {
     if (interval > 0) return;
-    frames = 0;
+    frames = 0; refresh = 250;
     board = new Board();
     flappy = new Flappy(150,150);
     pipes = [];
@@ -187,9 +193,9 @@ window.onload = function() {
 
   //Listener de la tecla flecha hacia arriba
   document.onkeydown = function(e) {
-    (e.keyCode == 38) && flappy.move();
+    (e.keyCode == 38 && interval > 0) && flappy.move();
   }
   document.ontouchstart = function(e) {
-    flappy.move();
+    (interval > 0) &&flappy.move();
   }
 };
